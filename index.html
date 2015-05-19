@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            WebSockets
+        </title>
+        <script src="jquery.js"></script>
+        <script src="underscore.js"></script>
+        <script src="game.js"></script>
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                overflow: hidden;
+            }
+
+             #loginOuter {
+                 width: 250px;
+                 height: 300px;
+                 position: absolute;
+                 left: 50%;
+                 top: 50%;
+             }
+
+            #loginInner {
+                width: 190px;
+                height: 240px;
+                position: absolute;
+                left: -50%;
+                top: -50%;
+                background-color: lightgray;
+                border-radius: 10px;
+                padding: 30px;
+            }
+
+            #loginInner > h2 {
+                font-size: 18px;
+            }
+
+            #userLogin {
+                margin: 0 auto;
+            }
+
+            #btn {
+                padding: 10px;
+                margin-top: 10px;
+                width: 100px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="loginOuter">
+            <div id="loginInner">
+                <h2>Login:</h2><input type="text" id="userLogin">
+                <input type="button" value="Go!" id="btn">
+            </div>
+        </div>
+
+        <canvas width="800" height="600" id="canvas" style="display: none;"></canvas>
+
+        <script>
+            $(document).ready(function() {
+                $('#btn').click(function () {
+                    $('#canvas').show();
+                    $('#loginOuter').hide();
+                    $('#canvas')
+                        .attr('width', $(window).width())
+                        .attr('height', $(window).height());
+                    initGame($('#userLogin').val());
+                });
+
+                $('#canvas').mousemove(function(e) {
+                    sendCoords(userId, e.clientX, e.clientY);
+                });
+
+                $(window).resize(function() {
+                    $('#canvas')
+                        .attr('width', $(window).width())
+                        .attr('height', $(window).height());
+                });
+            });
+        </script>
+    </body>
+</html>
