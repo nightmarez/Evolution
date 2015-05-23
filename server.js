@@ -225,7 +225,7 @@ function calculateMoving() {
 
         for (var i = 0; i < room.length; ++i) {
             try {
-                if (room[i].id) {
+                if (room[i].id && room[i].ws) {
                     room[i].ws.send(JSON.stringify({
                         action: 'move',
                         data: data
