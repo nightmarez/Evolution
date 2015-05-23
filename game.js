@@ -63,20 +63,20 @@ function initGame(userName) {
                     centerX -= $(canvas).width() / 2;
                     centerY -= $(canvas).height() / 2;
 
-                    if (centerX < $(canvas).width() / 2) {
-                        centerX = $(canvas).width() / 2;
+                    if (centerX < 0) {
+                        centerX = 0;
                     }
 
-                    if (centerX > 5000 - $(canvas).width() / 2) {
-                        centerX = 5000 - $(canvas).width() / 2;
+                    if (centerX > 5000 - $(canvas).width()) {
+                        centerX = 5000 - $(canvas).width();
                     }
 
-                    if (centerY < $(canvas).height() / 2) {
-                        centerY = $(canvas).height() / 2;
+                    if (centerY < 0) {
+                        centerY = 0;
                     }
 
-                    if (centerY > 5000 - $(canvas).height() / 2) {
-                        centerY = 5000 - $(canvas).height() / 2;
+                    if (centerY > 5000 - $(canvas).height()) {
+                        centerY = 5000 - $(canvas).height();
                     }
 
                     ctx.translate(-centerX, -centerY);
