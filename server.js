@@ -6,7 +6,7 @@ var mapHeight = 5000;
 var foodPerSecond = 10;
 var maxFoodCount = 300;
 var maxPricklesCount = 25;
-var framesPerSecond = 10;
+var framesPerSecond = 20;
 var frameTime = 1000 / framesPerSecond;
 
 function generateUniqId() {
@@ -75,7 +75,7 @@ function updatePrickles() {
                 name: false,
                 x: Math.ceil(Math.random() * mapWidth),
                 y: Math.ceil(Math.random() * mapHeight),
-                weight: 40,
+                weight: 50,
                 color: '#00ff00',
                 type: 'prickle'
             };
@@ -91,7 +91,7 @@ function decreaseMass() {
 
         for (var i = 0; i < room.length; ++i) {
             if (room[i].weight > 20) {
-                room[i].weight -= room[i].weight / 5000;
+                room[i].weight -= room[i].weight / 10000;
             }
         }
     }
@@ -168,7 +168,7 @@ function calculateMoving() {
 
         for (var i = 0; i < room.length; ++i) {
             if (room[i].targetX && room[i].targetY) {
-                var speed = 10;
+                var speed = 5;
 
                 speed -= room[i].weight / 1000;
 
@@ -249,7 +249,7 @@ function calculateMoving() {
     }
 }
 
-function roomsInRoom(room) {
+function usersInRoom(room) {
     var count = 0;
 
     for (var i = 0; i < room.length; ++i) {
@@ -295,7 +295,7 @@ wss.on('connection', function (ws) {
             var userInRoom = false;
 
             for (var k = 0; k < rooms.length; ++k) {
-                if (roomsInRoom(rooms[k]) < 2) {
+                if (usersInRoom(rooms[k]) < 2) {
                     rooms[k].push(user);
                     userInRoom = true;
                     break;
