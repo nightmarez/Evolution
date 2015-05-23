@@ -129,18 +129,41 @@ function initGame(userName) {
             for (var i = 0; i < ev.data.length; ++i) {
                 var user = ev.data[i];
 
-                ctx.beginPath();
-                ctx.arc(user.x, user.y, user.weight, 0, 2 * Math.PI, false);
-                ctx.fillStyle = user.color;
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#003300';
-                ctx.stroke();
+                if (user.type == 'prickle') {
+                    ctx.fillStyle = user.color;
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#003300';
+                    ctx.beginPath();
 
-                ctx.fillStyle = "#FFFFFF";
-                ctx.font = "normal 16pt Arial";
-                ctx.textAlign = "center";
-                ctx.fillText(user.name, user.x, user.y + 8);
+                    ctx.moveTo(
+                        user.x + Math.sin(0) * user.weight,
+                        user.y + Math.cos(0) * user.weigh);
+
+                    for (var j = 0, k = 0; j < 360; j += 9, ++k) {
+                        var g = j * Math.PI / 180;
+
+                        ctx.lineTo(
+                            user.x + Math.sin(g) * user.weight * (k % 2 ? 1.2 : 1),
+                            user.y + Math.cos(g) * user.weight * (k % 2 ? 1.2 : 1));
+                    }
+
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(user.x, user.y, user.weight, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = user.color;
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#003300';
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.font = "normal 16pt Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText(user.name || '', user.x, user.y + 8);
+                }
             }
 
             ctx.restore();

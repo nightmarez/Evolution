@@ -5,6 +5,7 @@ var mapWidth = 5000;
 var mapHeight = 5000;
 var foodPerSecond = 10;
 var maxFoodCount = 300;
+var maxPricklesCount = 25;
 var framesPerSecond = 10;
 var frameTime = 1000 / framesPerSecond;
 
@@ -22,67 +23,137 @@ function generateUniqId() {
 var WebSocketServer = require('ws').Server,
     wss = new WebSocketServer({ port: 1337 });
 
-var users = [];
+var rooms = [];
 var removedUsers = [];
 
 function updateFood() {
-    for (var k = 0; k < foodPerSecond / framesPerSecond; ++k) {
-        var foodCount = 0;
+    for (var j = 0; j < rooms.length; ++j) {
+        var room = rooms[j];
 
-        for (var i = 0; i < users.length; ++i) {
-            if (users[i].name == '') {
-                ++foodCount;
+        for (var k = 0; k < foodPerSecond / framesPerSecond; ++k) {
+            var foodCount = 0;
+
+            for (var i = 0; i < room.length; ++i) {
+                if (!room[i].id) {
+                    ++foodCount;
+                }
+            }
+
+            if (foodCount < maxFoodCount) {
+                var food = {
+                    id: false,
+                    name: false,
+                    x: Math.ceil(Math.random() * mapWidth),
+                    y: Math.ceil(Math.random() * mapHeight),
+                    weight: 5,
+                    color: rndColors[Math.ceil(Math.random() * rndColors.length)],
+                    type: 'food'
+                };
+
+                room.push(food);
+            }
+        }
+    }
+}
+
+function updatePrickles() {
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
+        var count = 0;
+
+        for (var i = 0; i < room.length; ++i) {
+            var item = room[i];
+
+            if (item.type == 'prickle') {
+                ++count;
             }
         }
 
-        if (foodCount < maxFoodCount) {
+        while (count++ < maxPricklesCount) {
             var food = {
-                id: '',
-                name: '',
+                id: false,
+                name: false,
                 x: Math.ceil(Math.random() * mapWidth),
                 y: Math.ceil(Math.random() * mapHeight),
-                weight: 5,
-                color: rndColors[Math.ceil(Math.random() * rndColors.length)]
+                weight: 40,
+                color: '#00ff00',
+                type: 'prickle'
             };
 
-            users.push(food);
+            room.push(food);
         }
     }
 }
 
 function decreaseMass() {
-    for (var i = 0; i < users.length; ++i) {
-        if (users[i].weight > 20) {
-            users[i].weight -= users[i].weight / 1000;
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
+
+        for (var i = 0; i < room.length; ++i) {
+            if (room[i].weight > 20) {
+                room[i].weight -= room[i].weight / 5000;
+            }
         }
     }
 }
 
 function calculateIntersections() {
-    for (var i = 0; i < users.length; ++i) {
-        for (var j = 0; j < users.length; ++j) {
-            if (i != j && users[i] && users[j]) {
-                if (users[i].weight - users[j].weight > 5) {
-                    var dist = Math.sqrt(
-                        Math.pow(users[i].x - users[j].x, 2) +
-                        Math.pow(users[i].y - users[j].y, 2));
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
 
-                    if (dist < users[i].weight) {
-                        users[i].weight += users[j].weight / 3;
+        for (var i = 0; i < room.length; ++i) {
+            for (var j = 0; j < room.length; ++j) {
+                if (i != j && room[i] && room[j]) {
+                    if (room[i].type == 'user' && room[j].type == 'prickle') {
+                        var dist = Math.sqrt(
+                            Math.pow(room[i].x - room[j].x, 2) +
+                            Math.pow(room[i].y - room[j].y, 2));
 
-                        removedUsers.push(users[j]);
-                        users.splice(j, 1);
-                    }
-                } else if (users[j].weight - users[i].weight > 5) {
-                    var dist = Math.sqrt(
-                        Math.pow(users[i].x - users[j].x, 2) +
-                        Math.pow(users[i].y - users[j].y, 2));
+                        if (dist < room[j].weight && room[i].weight > 10) {
+                            for (var m = 0; m < 5; ++m) {
+                                var particle = {
+                                    id: room[i].id,
+                                    name: room[i].name,
+                                    x: room[i].x + Math.ceil(Math.random() * 50 - 25),
+                                    y: room[i].y + Math.ceil(Math.random() * 50 - 25),
+                                    weight: room[i].weight / 5,
+                                    color: room[i].color,
+                                    type: room[i].type
+                                };
 
-                    if (dist < users[j].weight) {
-                        users[j].weight += users[i].weight / 3;
+                                room.push(particle);
+                            }
 
-                        removedUsers.push(users[i]);
-                        users.splice(i, 1);
+                            //room.splice(i, 1);
+                        }
+                    } else if (room[i].weight - room[j].weight > 5) {
+                        var dist = Math.sqrt(
+                            Math.pow(room[i].x - room[j].x, 2) +
+                            Math.pow(room[i].y - room[j].y, 2));
+
+                        if (dist < room[i].weight) {
+                            if (room[i].type == 'user' && room[j].type == 'user' && room[i].id != room[j].id ||
+                                room[i].type == 'user' && room[j].type == 'food') {
+                                
+                                room[i].weight += room[j].weight / 3;
+                                removedUsers[k].push(room[j]);
+                                room.splice(j, 1);
+                            }
+                        }
+                    } else if (room[j].weight - room[i].weight > 5) {
+                        var dist = Math.sqrt(
+                            Math.pow(room[i].x - room[j].x, 2) +
+                            Math.pow(room[i].y - room[j].y, 2));
+
+                        if (dist < room[j].weight) {
+                            if (room[i].type == 'user' && room[j].type == 'user' && room[i].id != room[j].id ||
+                                room[i].type == 'food' && room[j].type == 'user') {
+
+                                room[j].weight += room[i].weight / 3;
+                                removedUsers[k].push(room[i]);
+                                room.splice(i, 1);
+                            }
+                        }
                     }
                 }
             }
@@ -91,91 +162,110 @@ function calculateIntersections() {
 }
 
 function calculateMoving() {
-    var data = [];
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
 
-    for (var i = 0; i < users.length; ++i) {
-        if (users[i].targetX && users[i].targetY) {
-            var speed = 10;
+        for (var i = 0; i < room.length; ++i) {
+            if (room[i].targetX && room[i].targetY) {
+                var speed = 10;
 
-            speed -= users[i].weight / 1000;
+                speed -= room[i].weight / 1000;
 
-            if (speed <= 0) {
-                speed = 0.1;
-            }
-
-            var dist = Math.sqrt(
-                Math.pow(users[i].targetX - users[i].x, 2) +
-                Math.pow(users[i].targetY - users[i].y, 2));
-            var d = speed / dist;
-
-            if (d < 1) {
-                users[i].x += (users[i].targetX - users[i].x) * d;
-                users[i].y += (users[i].targetY - users[i].y) * d;
-
-                if (users[i].x < 0) {
-                    users[i].x = 0;
+                if (speed <= 0) {
+                    speed = 0.1;
                 }
 
-                if (users[i].x > mapWidth) {
-                    users[i].x = mapWidth;
-                }
+                var dist = Math.sqrt(
+                    Math.pow(room[i].targetX - room[i].x, 2) +
+                    Math.pow(room[i].targetY - room[i].y, 2));
+                var d = speed / dist;
 
-                if (users[i].y < 0) {
-                    users[i].y = 0;
-                }
+                if (d < 1) {
+                    room[i].x += (room[i].targetX - room[i].x) * d;
+                    room[i].y += (room[i].targetY - room[i].y) * d;
 
-                if (users[i].y > mapHeight) {
-                    users[i].y = mapHeight;
+                    if (room[i].x < 0) {
+                        room[i].x = 0;
+                    }
+
+                    if (room[i].x > mapWidth) {
+                        room[i].x = mapWidth;
+                    }
+
+                    if (room[i].y < 0) {
+                        room[i].y = 0;
+                    }
+
+                    if (room[i].y > mapHeight) {
+                        room[i].y = mapHeight;
+                    }
                 }
             }
         }
     }
 
-    for (var i = 0; i < users.length; ++i) {
-        var user = users[i];
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
+        var data = [];
 
-        data.push({
-            id: user.id,
-            name: user.name,
-            x: user.x,
-            y: user.y,
-            weight: user.weight,
-            color: user.color
-        });
-    }
+        for (var i = 0; i < room.length; ++i) {
+            var user = room[i];
 
-    for (var i = 0; i < users.length; ++i) {
-        try {
-            if (users[i].id) {
-                users[i].ws.send(JSON.stringify({
+            data.push({
+                id: user.id,
+                name: user.name,
+                x: user.x,
+                y: user.y,
+                weight: user.weight,
+                color: user.color,
+                type: user.type
+            });
+        }
+
+        for (var i = 0; i < room.length; ++i) {
+            try {
+                if (room[i].id) {
+                    room[i].ws.send(JSON.stringify({
+                        action: 'move',
+                        data: data
+                    }));
+                }
+            } catch (err) {
+                room.splice(i, 1);
+            }
+        }
+
+        for (var i = 0; i < removedUsers[k].length; ++i) {
+            try {
+                removedUsers[k][i].ws.send(JSON.stringify({
                     action: 'move',
                     data: data
                 }));
+            } catch (err) {
+                removedUsers[k].splice(i, 1);
             }
-        } catch (err) {
-            users.splice(i, 1);
-        }
-    }
-
-    for (var i = 0; i < removedUsers.length; ++i) {
-        try {
-            removedUsers[i].ws.send(JSON.stringify({
-                action: 'move',
-                data: data
-            }));
-        } catch (err) {
-            removedUsers.splice(i, 1);
         }
     }
 }
 
-setInterval(function() {
-    if (users.length) {
-        updateFood();
-        decreaseMass();
-        calculateIntersections();
-        calculateMoving();
+function roomsInRoom(room) {
+    var count = 0;
+
+    for (var i = 0; i < room.length; ++i) {
+        if (room[i].id) {
+            ++count;
+        }
     }
+
+    return count;
+}
+
+setInterval(function () {
+    updateFood();
+    updatePrickles();
+    decreaseMass();
+    calculateIntersections();
+    calculateMoving();
 }, frameTime);
 
 wss.on('connection', function (ws) {
@@ -197,19 +287,40 @@ wss.on('connection', function (ws) {
                 y: Math.random() * 4000 + 500,
                 ws: ws,
                 weight: 20,
-                color: rndColors[Math.ceil(Math.random() * rndColors.length)]
+                color: rndColors[Math.ceil(Math.random() * rndColors.length)],
+                type: 'user'
             };
 
-            users.push(user);
+            var userInRoom = false;
+
+            for (var k = 0; k < rooms.length; ++k) {
+                if (roomsInRoom(rooms[k]) < 2) {
+                    rooms[k].push(user);
+                    userInRoom = true;
+                    break;
+                }
+            }
+
+            if (!userInRoom) {
+                var room = [];
+                room.push(user);
+                rooms.push(room);
+                removedUsers.push([]);
+            }
+            
             ws.send(JSON.stringify({
                 action: 'login',
                 id: user.id
             }));
         } else if (ev.action == 'move') {
-            for (var i = 0; i < users.length; ++i) {
-                if (users[i].id == ev.id) {
-                    users[i].targetX = ev.x;
-                    users[i].targetY = ev.y;
+            for (var k = 0; k < rooms.length; ++k) {
+                var room = rooms[k];
+
+                for (var i = 0; i < room.length; ++i) {
+                    if (room[i].id == ev.id) {
+                        room[i].targetX = ev.x;
+                        room[i].targetY = ev.y;
+                    }
                 }
             }
         }
