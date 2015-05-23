@@ -295,7 +295,7 @@ wss.on('connection', function (ws) {
             var userInRoom = false;
 
             for (var k = 0; k < rooms.length; ++k) {
-                if (usersInRoom(rooms[k]) < 2) {
+                if (usersInRoom(rooms[k]) < 25) {
                     rooms[k].push(user);
                     userInRoom = true;
                     break;
@@ -325,9 +325,5 @@ wss.on('connection', function (ws) {
                 }
             }
         }
-    });
-
-    ws.on('disconnect', function () {
-        console.log('disconnect');
     });
 });
