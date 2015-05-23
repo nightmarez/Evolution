@@ -104,54 +104,55 @@ function calculateIntersections() {
         for (var i = 0; i < room.length; ++i) {
             for (var j = 0; j < room.length; ++j) {
                 if (i != j && room[i] && room[j]) {
-                    if (room[i].type == 'user' && room[j].type == 'prickle') {
-                        var dist = Math.sqrt(
-                            Math.pow(room[i].x - room[j].x, 2) +
-                            Math.pow(room[i].y - room[j].y, 2));
+                    var user1 = room[i];
+                    var user2 = room[j];
 
-                        if (dist < room[j].weight && room[i].weight > 10) {
-                            for (var m = 0; m < 5; ++m) {
-                                var particle = {
-                                    id: room[i].id,
-                                    name: room[i].name,
-                                    x: room[i].x + Math.ceil(Math.random() * 50 - 25),
-                                    y: room[i].y + Math.ceil(Math.random() * 50 - 25),
-                                    weight: room[i].weight / 5,
-                                    color: room[i].color,
-                                    type: room[i].type
-                                };
+                    if (user1.type == 'user') {
+                        if (user2.type == 'user') {
+                            if (user1.id != user2.id) {
+                                var dist = Math.sqrt(
+                                    Math.pow(user1.x - user2.x, 2) +
+                                    Math.pow(user1.y - user2.y, 2));
 
-                                room.push(particle);
+                                if (dist < user1.weight) {
+                                    room[i].weight += room[j].weight;
+                                    removedUsers[k].push(room[j]);
+                                    room.splice(j, 1);
+                                }
                             }
+                        } else if (user2.type == 'prickle') {
+                            var dist = Math.sqrt(
+                                Math.pow(room[i].x - room[j].x, 2) +
+                                Math.pow(room[i].y - room[j].y, 2));
 
-                            //room.splice(i, 1);
-                        }
-                    } else if (room[i].weight - room[j].weight > 5) {
-                        var dist = Math.sqrt(
-                            Math.pow(room[i].x - room[j].x, 2) +
-                            Math.pow(room[i].y - room[j].y, 2));
+                            if (dist < room[j].weight && room[i].weight > 50) {
+                                for (var m = 0; m < 5; ++m) {
+                                    var particle = {
+                                        id: user1.id,
+                                        name: user1.name,
+                                        x: user1.x + Math.ceil(Math.random() * 250 - 125),
+                                        y: user1.y + Math.ceil(Math.random() * 250 - 125),
+                                        weight: user1.weight / 3,
+                                        color: user1.color,
+                                        type: user1.type
+                                    };
 
-                        if (dist < room[i].weight) {
-                            if (room[i].type == 'user' && room[j].type == 'user' && room[i].id != room[j].id ||
-                                room[i].type == 'user' && room[j].type == 'food') {
-                                
+                                    room.push(particle);
+                                }
+
+                                room.splice(i, 1);
+                                removedUsers[k].push(user1);
+                                room.splice(j, 1);
+                            }
+                        } else if (user2.type == 'food') {
+                            var dist = Math.sqrt(
+                                Math.pow(user1.x - user2.x, 2) +
+                                Math.pow(user1.y - user2.y, 2));
+
+                            if (dist < user1.weight) {
                                 room[i].weight += room[j].weight / 3;
                                 removedUsers[k].push(room[j]);
                                 room.splice(j, 1);
-                            }
-                        }
-                    } else if (room[j].weight - room[i].weight > 5) {
-                        var dist = Math.sqrt(
-                            Math.pow(room[i].x - room[j].x, 2) +
-                            Math.pow(room[i].y - room[j].y, 2));
-
-                        if (dist < room[j].weight) {
-                            if (room[i].type == 'user' && room[j].type == 'user' && room[i].id != room[j].id ||
-                                room[i].type == 'food' && room[j].type == 'user') {
-
-                                room[j].weight += room[i].weight / 3;
-                                removedUsers[k].push(room[i]);
-                                room.splice(i, 1);
                             }
                         }
                     }
