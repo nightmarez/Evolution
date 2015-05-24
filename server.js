@@ -324,6 +324,31 @@ wss.on('connection', function (ws) {
                     }
                 }
             }
+        } else if (ev.action == 'division') {
+            var id = ev.id;
+
+            for (var k = 0; k < rooms.length; ++k) {
+                var room = rooms[k];
+
+                for (var i = 0; i < room.length; ++i) {
+                    var item = room[i];
+
+                    if (item.weight > 50) {
+                        var particle = {
+                            id: item.id,
+                            name: item.name,
+                            x: item.x + 200,
+                            y: item.y,
+                            weight: item.weight / 2,
+                            color: item.color,
+                            type: item.type
+                        };
+
+                        room.push(particle);
+                        room[i].weight /= 2;
+                    }
+                }
+            }
         }
     });
 });

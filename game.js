@@ -232,3 +232,12 @@ function sendCoords(id, x, y) {
         }));
     }
 }
+
+function tryDivision() {
+    if (userId) {
+        ws.send(JSON.stringify({
+            action: 'division',
+            id: userId
+        }));
+    }
+}

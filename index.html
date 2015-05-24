@@ -81,6 +81,12 @@
                         .attr('width', $(window).width())
                         .attr('height', $(window).height());
                 });
+
+                $(window).keyup(function(e) {
+                    if (e.which == 87 /* w */) {
+                        tryDivision();
+                    }
+                });
             });
         </script>
     </body>
