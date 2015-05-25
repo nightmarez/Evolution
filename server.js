@@ -117,7 +117,7 @@ function calculateIntersections() {
                                 if (dist < user1.weight) {
                                     room[i].weight += room[j].weight;
                                     removedUsers[k].push(room[j]);
-                                    room.splice(j, 1);
+                                    room.splice(j--, 1);
                                 }
                             }
                         } else if (user2.type == 'prickle') {
@@ -140,9 +140,9 @@ function calculateIntersections() {
                                     room.push(particle);
                                 }
 
-                                room.splice(i, 1);
+                                room.splice(i--, 1);
                                 removedUsers[k].push(user1);
-                                room.splice(j, 1);
+                                room.splice(j--, 1);
                             }
                         } else if (user2.type == 'food') {
                             var dist = Math.sqrt(
@@ -152,7 +152,7 @@ function calculateIntersections() {
                             if (dist < user1.weight) {
                                 room[i].weight += room[j].weight / 3;
                                 removedUsers[k].push(room[j]);
-                                room.splice(j, 1);
+                                room.splice(j--, 1);
                             }
                         }
                     }
@@ -232,7 +232,7 @@ function calculateMoving() {
                     }));
                 }
             } catch (err) {
-                room.splice(i, 1);
+                room.splice(i--, 1);
             }
         }
 
@@ -243,7 +243,13 @@ function calculateMoving() {
                     data: data
                 }));
             } catch (err) {
-                removedUsers[k].splice(i, 1);
+                for (var m = 0; m < room.length; ++m) {
+                    if (room[m].id == removedUsers[k].id) {
+                        room.splice(m--, 1);
+                    }
+                }
+
+                removedUsers[k].splice(i--, 1);
             }
         }
     }
