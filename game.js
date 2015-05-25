@@ -202,7 +202,7 @@ function initGame(userName) {
                 while (found) {
                     found = false;
 
-                    for (var i = 0; i < usersScores - 1; ++i) {
+                    for (var i = 0; i < usersScores.length - 1; ++i) {
                         if (usersScores[i].weight < usersScores[i + 1].weight) {
                             var tmp = usersScores[i];
                             usersScores[i] = usersScores[i + 1];
