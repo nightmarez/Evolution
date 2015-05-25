@@ -174,6 +174,11 @@ function initGame(userName) {
 
                 for (var i = 0; i < ev.data.length; ++i) {
                     var user = ev.data[i];
+
+                    if (!user.id) {
+                        continue;
+                    }
+
                     var found = false;
 
                     for (var j = 0; j < usersScores.length; ++j) {
