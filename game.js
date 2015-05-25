@@ -3,8 +3,8 @@ var ws = false;
 var centerX = 0, centerY = 0;
 
 function initGame(userName) {
-    //ws = new WebSocket('ws://46.161.3.218:1337');
-    ws = new WebSocket('ws://localhost:1337');
+    ws = new WebSocket('ws://46.161.3.218:1337');
+    //ws = new WebSocket('ws://localhost:1337');
 
     ws.onmessage = function (message) {
         var ev = JSON.parse(message.data);
@@ -170,43 +170,48 @@ function initGame(userName) {
 
             // users top
             {
-                var usersTop = [];
-
-                for (var i = 0; i < 10; ++i) {
-                    usersTop.push({
-                        name: false,
-                        weight: 0
-                    });
-                }
+                var usersScores = [];
 
                 for (var i = 0; i < ev.data.length; ++i) {
                     var user = ev.data[i];
+                    var found = false;
 
-                    for (var j = 0; j < 10; ++j) {
-                        if (user.weight > usersTop[j].weight) {
-                            for (var k = 9; k > j; --k) {
-                                usersTop[k] = usersTop[k - 1];
-                            }
-
-                            usersTop[j] = {
-                                name: user.name,
-                                weight: user.weight
-                            };
-
+                    for (var j = 0; j < usersScores.length; ++j) {
+                        if (usersScores[j].name == user.name) {
+                            usersScores[j].weight += user.weight;
+                            found = true;
                             break;
+                        }
+                    }
+
+                    if (!found) {
+                        usersScores.push({
+                            name: user.name,
+                            weight: user.weight
+                        });
+                    }
+                }
+
+                var found = true;
+
+                while (found) {
+                    found = false;
+
+                    for (var i = 0; i < usersScores - 1; ++i) {
+                        if (usersScores[i].weight < usersScores[i + 1].weight) {
+                            var tmp = usersScores[i];
+                            usersScores[i] = usersScores[i + 1];
+                            usersScores[i + 1] = tmp;
+                            found = true;
                         }
                     }
                 }
 
-                for (var i = 0; i < 10; ++i) {
-                    if (usersTop[i].name) {
-                        ctx.fillStyle = "#FFFFFF";
-                        ctx.font = "normal 16pt Arial";
-                        ctx.textAlign = "left";
-                        ctx.fillText((i + 1) + '. ' + usersTop[i].name + ' (' + Math.ceil(usersTop[i].weight) + ')', 10, 20 + 20 * i);
-                    } else {
-                        break;
-                    }
+                for (var i = 0; i < 10 && i < usersScores.length; ++i) {
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.font = "normal 16pt Arial";
+                    ctx.textAlign = "left";
+                    ctx.fillText((i + 1) + '. ' + usersScores[i].name + ' (' + Math.ceil(usersScores[i].weight) + ')', 10, 20 + 20 * i);
                 }
             }
         } else if (ev.action == 'login') {
@@ -229,15 +234,6 @@ function sendCoords(id, x, y) {
             id: userId,
             x: x + centerX,
             y: y + centerY
-        }));
-    }
-}
-
-function tryDivision() {
-    if (userId) {
-        ws.send(JSON.stringify({
-            action: 'division',
-            id: userId
         }));
     }
 }
