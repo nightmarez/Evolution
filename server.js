@@ -361,7 +361,7 @@ function createBots() {
     for (var k = 0; k < rooms.length; ++k) {
         var room = rooms[k];
 
-        while (usersInRoom(room < 5)) {
+        while (usersInRoom(room) < 5) {
             var name = botNames[Math.floor(Math.random() * botNames.length)];
 
             do {
