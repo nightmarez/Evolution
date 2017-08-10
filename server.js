@@ -284,6 +284,8 @@ function isNameExistsInRoom(room, name) {
 var botNames = ['Whisky', 'Pendos', 'Hohol', 'Zhopa', 'USSR', 'MotherFucker', 'Bear', 'Beaver', 'Mamka', 'LoL', 'KissMyAssHole', 'Zaraza'];
 
 function createBots() {
+    'strict';
+
     for (let k = 0; k < rooms.length; ++k) {
         let room = rooms[k];
 
