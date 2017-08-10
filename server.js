@@ -284,19 +284,17 @@ function isNameExistsInRoom(room, name) {
 var botNames = ['Whisky', 'Pendos', 'Hohol', 'Zhopa', 'USSR', 'MotherFucker', 'Bear', 'Beaver', 'Mamka', 'LoL', 'KissMyAssHole', 'Zaraza'];
 
 function createBots() {
-    'strict';
-
-    for (let k = 0; k < rooms.length; ++k) {
-        let room = rooms[k];
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
 
         while (usersInRoom(room < 5)) {
-            let name = botNames[Math.floor(Math.random() * botNames.length)];
+            var name = botNames[Math.floor(Math.random() * botNames.length)];
 
             do {
                 name = botNames[Math.floor(Math.random() * botNames.length)];
             } while (isNameExistsInRoom(room, name));
 
-            let bot = {
+            var bot = {
                 id: false,
                 name: false,
                 x: Math.ceil(Math.random() * mapWidth),
