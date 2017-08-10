@@ -13,7 +13,7 @@ function generateUniqId() {
     var name = '';
 
     for (var i = 0; i < 10; ++i) {
-        name += rndSymbols[Math.ceil(Math.random() * rndSymbols.length)];
+        name += rndSymbols[Math.floor(Math.random() * rndSymbols.length)];
     }
 
     return name + (++maxUserId);
@@ -46,7 +46,7 @@ function updateFood() {
                     x: Math.ceil(Math.random() * mapWidth),
                     y: Math.ceil(Math.random() * mapHeight),
                     weight: 5,
-                    color: rndColors[Math.ceil(Math.random() * rndColors.length)],
+                    color: rndColors[Math.floor(Math.random() * rndColors.length)],
                     type: 'food'
                 };
 
@@ -70,7 +70,7 @@ function updatePrickles() {
         }
 
         while (count++ < maxPricklesCount) {
-            var food = {
+            var prickle = {
                 id: false,
                 name: false,
                 x: Math.ceil(Math.random() * mapWidth),
@@ -80,7 +80,7 @@ function updatePrickles() {
                 type: 'prickle'
             };
 
-            room.push(food);
+            room.push(prickle);
         }
     }
 }
@@ -108,30 +108,30 @@ function calculateIntersections() {
                     var user2 = room[j];
 
                     if (user1.type == 'user') {
-                        if (user2.type == 'user') {
+                        if (user2.type == 'user' || user2.type == 'bot') {
                             if (user1.id != user2.id) {
                                 var dist = Math.sqrt(
                                     Math.pow(user1.x - user2.x, 2) +
                                     Math.pow(user1.y - user2.y, 2));
 
                                 if (dist < user1.weight) {
-                                    room[i].weight += room[j].weight;
-                                    removedUsers[k].push(room[j]);
+                                    user1.weight += user2.weight;
+                                    removedUsers[k].push(user2);
                                     room.splice(j--, 1);
                                 }
                             }
                         } else if (user2.type == 'prickle') {
                             var dist = Math.sqrt(
-                                Math.pow(room[i].x - room[j].x, 2) +
-                                Math.pow(room[i].y - room[j].y, 2));
+                                Math.pow(user1.x - user2.x, 2) +
+                                Math.pow(user1.y - user2.y, 2));
 
-                            if (dist < room[j].weight && room[i].weight > 50) {
+                            if (dist < user2.weight && user1.weight > 50) {
                                 for (var m = 0; m < 5; ++m) {
                                     var particle = {
                                         id: user1.id,
                                         name: user1.name,
-                                        x: user1.x + Math.ceil(Math.random() * 250 - 125),
-                                        y: user1.y + Math.ceil(Math.random() * 250 - 125),
+                                        x: user1.x + Math.ceil(Math.random() * 500 - 250),
+                                        y: user1.y + Math.ceil(Math.random() * 500 - 250),
                                         weight: user1.weight / 3,
                                         color: user1.color,
                                         type: user1.type
@@ -150,8 +150,8 @@ function calculateIntersections() {
                                 Math.pow(user1.y - user2.y, 2));
 
                             if (dist < user1.weight) {
-                                room[i].weight += room[j].weight / 3;
-                                removedUsers[k].push(room[j]);
+                                user1.weight += user2.weight / 3;
+                                removedUsers[k].push(user2);
                                 room.splice(j--, 1);
                             }
                         }
@@ -163,10 +163,14 @@ function calculateIntersections() {
 }
 
 function calculateMoving() {
+    var user;
+
     for (var k = 0; k < rooms.length; ++k) {
         var room = rooms[k];
 
         for (var i = 0; i < room.length; ++i) {
+            user = room[i];
+
             if (room[i].targetX && room[i].targetY) {
                 var speed = 5;
 
@@ -177,28 +181,28 @@ function calculateMoving() {
                 }
 
                 var dist = Math.sqrt(
-                    Math.pow(room[i].targetX - room[i].x, 2) +
-                    Math.pow(room[i].targetY - room[i].y, 2));
+                    Math.pow(user.targetX - user.x, 2) +
+                    Math.pow(user.targetY - user.y, 2));
                 var d = speed / dist;
 
                 if (d < 1) {
-                    room[i].x += (room[i].targetX - room[i].x) * d;
-                    room[i].y += (room[i].targetY - room[i].y) * d;
+                    user.x += (user.targetX - user.x) * d;
+                    user.y += (user.targetY - user.y) * d;
 
-                    if (room[i].x < 0) {
-                        room[i].x = 0;
+                    if (user.x < 0) {
+                        user.x = 0;
                     }
 
-                    if (room[i].x > mapWidth) {
-                        room[i].x = mapWidth;
+                    if (user.x > mapWidth) {
+                        user.x = mapWidth;
                     }
 
-                    if (room[i].y < 0) {
-                        room[i].y = 0;
+                    if (user.y < 0) {
+                        user.y = 0;
                     }
 
-                    if (room[i].y > mapHeight) {
-                        room[i].y = mapHeight;
+                    if (user.y > mapHeight) {
+                        user.y = mapHeight;
                     }
                 }
             }
@@ -210,7 +214,7 @@ function calculateMoving() {
         var data = [];
 
         for (var i = 0; i < room.length; ++i) {
-            var user = room[i];
+            user = room[i];
 
             data.push({
                 id: user.id,
@@ -267,10 +271,49 @@ function usersInRoom(room) {
     return count;
 }
 
+function isNameExistsInRoom(room, name) {
+    for (var i = 0; i < room.length; ++i) {
+        if (room[i].name == name) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+var botNames = ['Whisky', 'Pendos', 'Hohol', 'Zhopa', 'USSR', 'MotherFucker', 'Bear', 'Beaver', 'Mamka', 'LoL', 'KissMyAssHole', 'Zaraza'];
+
+function createBots() {
+    for (let k = 0; k < rooms.length; ++k) {
+        let room = rooms[k];
+
+        while (usersInRoom(room < 5)) {
+            let name = botNames[Math.floor(Math.random() * botNames.length)];
+
+            do {
+                name = botNames[Math.floor(Math.random() * botNames.length)];
+            } while (isNameExistsInRoom(room, name));
+
+            let bot = {
+                id: false,
+                name: false,
+                x: Math.ceil(Math.random() * mapWidth),
+                y: Math.ceil(Math.random() * mapHeight),
+                weight: 50,
+                color: rndColors[Math.floor(Math.random() * rndColors.length)],
+                type: 'bot'
+            };
+
+            room.push(bot);
+        }
+    }
+}
+
 setInterval(function () {
     updateFood();
     updatePrickles();
     decreaseMass();
+    createBots();
     calculateIntersections();
     calculateMoving();
 }, frameTime);
@@ -294,7 +337,7 @@ wss.on('connection', function (ws) {
                 y: Math.random() * 4000 + 500,
                 ws: ws,
                 weight: 20,
-                color: rndColors[Math.ceil(Math.random() * rndColors.length)],
+                color: rndColors[Math.floor(Math.random() * rndColors.length)],
                 type: 'user'
             };
 

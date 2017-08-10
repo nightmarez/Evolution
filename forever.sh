@@ -1,0 +1,1 @@
+while true; do (nodejs server.js &); sleep 300s; killall -9 nodejs; done
