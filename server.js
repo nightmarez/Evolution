@@ -125,7 +125,7 @@ function calculateIntersections() {
                                 Math.pow(user1.x - user2.x, 2) +
                                 Math.pow(user1.y - user2.y, 2));
 
-                            if (dist < user2.weight && user1.weight > 50) {
+                            if (dist <= user2.weight + user1.weight && user1.weight > 30) {
                                 for (var m = 0; m < 5; ++m) {
                                     var particle = {
                                         id: user1.id,
