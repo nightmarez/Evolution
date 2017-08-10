@@ -162,6 +162,80 @@ function calculateIntersections() {
     }
 }
 
+function calculateBotsMoving() {
+    var bot, food;
+
+    for (var k = 0; k < rooms.length; ++k) {
+        var room = rooms[k];
+
+        for (var i = 0; i < room.length; ++i) {
+            bot = room[i];
+
+            if (bot.type == 'bot') {
+                var foods = [];
+
+                for (var j = 0; j < room.length; ++j) {
+                    food = room[i];
+
+                    if (food.type == 'food') {
+                        foods.push(food);
+                    }
+                }
+
+                var mindist = 1000000;
+                var nearfood = false;
+
+                for (var m = 0; m < foods.length; ++m) {
+                    var dist = Math.sqrt(
+                        Math.pow(foods[m].targetX - bot.x, 2) +
+                        Math.pow(foods[m].targetY - bot.y, 2));
+
+                    if (dist < mindist) {
+                        mindist = dist;
+                        nearfood = foods[m];
+                    }
+                }
+
+                if (nearfood) {
+                    var speed = 5;
+
+                    speed -= bot.weight / 1000;
+
+                    if (speed <= 0) {
+                        speed = 0.1;
+                    }
+
+                    var dist = Math.sqrt(
+                        Math.pow(nearfood.x - bot.x, 2) +
+                        Math.pow(nearfood.y - bot.y, 2));
+                    var d = speed / dist;
+
+                    if (d < 1) {
+                        bot.x += (nearfood.x - bot.x) * d;
+                        bot.y += (nearfood.y - bot.y) * d;
+
+                        if (bot.x < 0) {
+                            bot.x = 0;
+                        }
+
+                        if (bot.x > mapWidth) {
+                            bot.x = mapWidth;
+                        }
+
+                        if (bot.y < 0) {
+                            bot.y = 0;
+                        }
+
+                        if (bot.y > mapHeight) {
+                            bot.y = mapHeight;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 function calculateMoving() {
     var user;
 
@@ -295,8 +369,8 @@ function createBots() {
             } while (isNameExistsInRoom(room, name));
 
             var bot = {
-                id: false,
-                name: false,
+                id: '[bot]' + generateUniqId(),
+                name: '[bot] ' + name,
                 x: Math.ceil(Math.random() * mapWidth),
                 y: Math.ceil(Math.random() * mapHeight),
                 weight: 50,
@@ -314,6 +388,7 @@ setInterval(function () {
     updatePrickles();
     decreaseMass();
     createBots();
+    calculateBotsMoving();
     calculateIntersections();
     calculateMoving();
 }, frameTime);

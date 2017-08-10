@@ -3,8 +3,7 @@ var ws = false;
 var centerX = 0, centerY = 0;
 
 function initGame(userName) {
-    ws = new WebSocket('ws://46.161.3.218:1337');
-    //ws = new WebSocket('ws://localhost:1337');
+    ws = new WebSocket('ws://evo.nightmarez.net:1337');
 
     ws.onmessage = function (message) {
         var ev = JSON.parse(message.data);
